@@ -7,16 +7,15 @@ class Block:
         self.x=x
         self.y=y
         self.img = loadImage(path+"/images/block.png")
+        self.dim = 20 #dimension of a block is 20 x 20
         
     def display(self):
-        image(self.img,self.x*20,self.y*20)
+        image(self.img,self.x*self.dim,self.y*self.dim)
             
 class Pellet:
-    def __init__(self,x,y,v=0): 
-        #v is value for score for later
+    def __init__(self,x,y): 
         self.x=x
         self.y=y
-        self.v=v
         self.img = loadImage(path+"/images/pellet.png")
         
     
@@ -40,17 +39,18 @@ class Board:
                     self.blocks.append(Block(x,y))
                 elif i == '.':
                     self.pellet.append(Pellet(x,y))
-                # elif i == '*':
-                #     self.blocks.append(Block(x*20,y*20,'special'))
                 x+=1
             y+=1
-            
+        
+        # print x and y of every block
+        for block in self.blocks:
+            print("Block: {},{}".format(block.x,block.y))
+        
     def display(self):
         for block in self.blocks:
             block.display()
         for pellet in self.pellet:
             pellet.display()
-        
 
 class Creature:
     def __init__(self,x,y,v=1,vx=0,vy=0):
@@ -59,7 +59,7 @@ class Creature:
         self.v=v
         self.dir="RIGHT"
         self.img=loadImage(path+'/images/pacman'+str(self.dir)+'.png')
-     
+    
         
 class PacMan(Creature):
     def __init__(self,x,y):
@@ -67,33 +67,38 @@ class PacMan(Creature):
         self.keyHandler = {LEFT:False, RIGHT:False, UP:False, DOWN:False}
         self.vx=0
         self.vy=0
+        self.dim = 18
         self.dir = "RIGHT"
         
         
     def update(self):
         if self.keyHandler[LEFT]:
-            self.vx = -10
-            self.dir = 'LEFT'
+            self.vx = -1
+            self.vy = 0
+            # self.dir = 'LEFT'
             print(self.dir)
         elif self.keyHandler[RIGHT]:
-            self.vx = 10
-            self.dir = 'RIGHT'
+            self.vx = 1
+            self.vy = 0
+            # self.dir = 'RIGHT'
             print(self.dir)
         elif self.keyHandler[UP]:
-            self.vy = -10
-            self.dir = 'UP'
+            self.vx = 0
+            self.vy = -1
+            # self.dir = 'UP'
             print(self.dir)
         elif self.keyHandler[DOWN]:
-            self.vy = 10
-            self.dir = 'DOWN'
+            self.vx = 0
+            self.vy = 1
+            # self.dir = 'DOWN'
             print(self.dir)
         else:
-            self.vy=0
-            self.vx=0
+            self.vx = 0
+            self.vy = 0
         
         # before we add hte velocities, check if PacMan is in a square that lets him move to the next block
         nextBlockSafe = self.checkNextTile()
-        if nextBlockSafe:
+        if nextBlockSafe == True:
             self.x += self.vx
             self.y += self.vy
         
@@ -117,31 +122,28 @@ class PacMan(Creature):
         
 
     def display(self):
-        image(self.img,self.x,self.y,20,20)
+        image(self.img,self.x,self.y,self.dim,self.dim)
         self.update()
         
     # True if moveable, False if block
     def checkNextTile(self):
+        checkC = self.y//self.dim
+        checkR = self.x//self.dim
+        print("PacMan {},{}".format(checkR,checkC))
         # 1. Convert pacman's x and y coordinates to a row and column
-        checkR = self.y//20
-        checkC = self.x//20
-
-        # # 2 Based on the direction pacman is facing, get the tile that is +1 or -1 to r or c, depending
-        if self.dir == 'RIGHT':
-            checkC = checkC+1
+        # print("TopLeft: {}:{}, TopRight: {}:{}, BotLeft: {}:{}, BotRight: {}:{}".format(self.x, self.y, (self.x+self.dim), self.y, self.x, (self.y+self.dim), (self.x+self.dim), (self.y+self.dim)))
         if self.dir == 'LEFT':
-            checkC = checkC-1
-        if self.dir == 'DOWN':
-            checkR = checkR+1
-        if self.dir == 'UP':
-            checkR = checkR-1
-        print("Checking {},{}".format(checkR, checkC))
-            
-            
-        for b in bo.blocks:
-            if b.y==checkR or b.x==checkC:
-                return False
-        return True
+        #     print("CAST FROM TOPLEFT AND BOTTOMLEFT IN LEFT DIRECTION")
+        # elif self.dir == 'RIGHT':
+        #     print("CAST FROM TOPRIGHT AND BOTRIGHT IN RIGHT DIRECTION")
+        # elif self.dir == 'UP':
+        #     print("CAST FROP TOPLEFT AND TOPRIGHT IN UP DIRECTION")
+        # elif self.dir == 'DOWN':
+        #     print("CAST FROP BOTLEFT AND BOTRIGHT IN DOWN DIRECTION")
+        # print("IF BOTH CASTS GAVE EMPTY, WE CAN MOVE IN THAT DIRECTION")
+        else:
+            return False
+        
     
 
 
@@ -165,7 +167,6 @@ class Game:
         #print(getTile(PacMan))
         
         
-bo = Board()
 g = Game(540,540)
 
 def setup():
@@ -179,12 +180,16 @@ def draw():
 def keyPressed():
     if keyCode == LEFT:
         g.pacman.keyHandler[LEFT] = True
+        g.pacman.dir = "LEFT"
     elif keyCode == RIGHT:
         g.pacman.keyHandler[RIGHT] = True
+        g.pacman.dir = "RIGHT"
     elif keyCode == UP:
         g.pacman.keyHandler[UP] = True
+        g.pacman.dir = "UP"
     elif keyCode == DOWN:
         g.pacman.keyHandler[DOWN] = True
+        g.pacman.dir = "DOWN"
     if key == 'x':
         g.pacman.checkNextTile()
         
