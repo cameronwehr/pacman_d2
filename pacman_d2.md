@@ -7,7 +7,7 @@ class Block:
         self.x=x
         self.y=y
         self.img = loadImage(path+"/images/block.png")
-        self.dim = 16 #dimension of a block is 20 x 20
+        self.dim = 20 #dimension of a block is 20 x 20
         
     def display(self):
         image(self.img,self.x,self.y)
@@ -43,8 +43,8 @@ class Board:
             row+=1
         
         # print x and y of every block
-        for block in self.blocks:
-            print("Block: {},{}".format(block.x,block.y))
+        # for block in self.blocks:
+        #     print("Block: {},{}".format(block.x,block.y))
         
     def display(self):
         for block in self.blocks:
@@ -79,27 +79,29 @@ class PacMan(Creature):
         
     def update(self):
         if self.keyHandler[LEFT]:
-            self.vx = -1
-            self.vy = 0
-            # self.dir = 'LEFT'
-            print(self.dir)
+            self.vx = -20
+            # self.vy = 0
+            self.dir = 'LEFT'
+            # print(self.dir)
         elif self.keyHandler[RIGHT]:
-            self.vx = 1
-            self.vy = 0
-            # self.dir = 'RIGHT'
-            print(self.dir)
-        elif self.keyHandler[UP]:
-            self.vx = 0
-            self.vy = -1
-            # self.dir = 'UP'
-            print(self.dir)
-        elif self.keyHandler[DOWN]:
-            self.vx = 0
-            self.vy = 1
-            # self.dir = 'DOWN'
-            print(self.dir)
+            self.vx = 20
+            # self.vy = 0
+            self.dir = 'RIGHT'
+            # print(self.dir)
         else:
-            self.vx = 0
+            self.vx = 0 
+        
+        if self.keyHandler[UP]:
+            # self.vx = 0
+            self.vy = -20
+            self.dir = 'UP'
+            # print(self.dir)
+        elif self.keyHandler[DOWN]:
+            # self.vx = 0
+            self.vy = 20
+            self.dir = 'DOWN'
+            # print(self.dir)
+        else:
             self.vy = 0
         
         # before we add hte velocities, check if PacMan is in a square that lets him move to the next block
@@ -108,6 +110,7 @@ class PacMan(Creature):
             self.x += self.vx
             self.y += self.vy
         # print(self.x, self.y)
+    
         
     # def display(self):
     #     self.update()
@@ -131,6 +134,7 @@ class PacMan(Creature):
     def display(self):
         image(self.img,self.x,self.y,self.dim,self.dim)
         self.update()
+        print self.vx, self.vy 
         
     # True if moveable, False if block
     def checkNextTile(self):
@@ -143,23 +147,32 @@ class PacMan(Creature):
         # 1. Convert pacman's x and y coordinates to a row and column
         # print("TopLeft: {}:{}, TopRight: {}:{}, BotLeft: {}:{}, BotRight: {}:{}".format(self.x, self.y, (self.x+self.dim), self.y, self.x, (self.y+self.dim), (self.x+self.dim), (self.y+self.dim)))
         fill(255)
-        if self.dir == 'LEFT':
+
+        if self.keyHandler[LEFT] or self.keyHandler[RIGHT] :
             for b in g.board.blocks:
-                if (b.x <= self.x <= b.x + b.dim ) and (b.y - b.dim < self.y < b.y + b.dim):
+                if self.y == b.y and self.x+self.vx == b.x:
+                    self.vx = 0
+                    self.vy = 0
                     return False
-        if self.dir == 'RIGHT':
+        
+        if self.keyHandler[UP] or  self.keyHandler[DOWN]:
             for b in g.board.blocks:
-                if (b.x <= self.x+b.dim <= b.x + b.dim) and (b.y - b.dim < self.y < b.y +  b.dim):
+                if self.x == b.x and self.y+self.vy == b.y:
+                    self.vy = 0
+                    self.vx = 0
                     return False
-        if self.dir == 'DOWN':
-            for b in g.board.blocks:
-                if (b.x - b.dim < self.x < b.x + b.dim) and (b.y - b. dim <=self.y <= b.y):
-                    return False        
-        if self.dir == 'UP':
-            for b in g.board.blocks:
-                if (b.x - b.dim < self.x < b.x + b.dim) and (b.y <= self.y <= b.y + b.dim ):
-                    return False    
-        print(self.x, self.y)
+                
+                # if (b.x <= self.x+b.dim <= b.x + b.dim) and (b.y - b.dim < self.y < b.y +  b.dim):
+                #     return False
+        # if self.dir == 'DOWN':
+        #     for b in g.board.blocks:
+        #         if (b.x - b.dim < self.x < b.x + b.dim) and (b.y - b. dim <=self.y <= b.y):
+        #             return False        
+        # if self.dir == 'UP':
+        #     for b in g.board.blocks:
+        #         if (b.x - b.dim < self.x < b.x + b.dim) and (b.y <= self.y <= b.y + b.dim ):
+        #             return False    
+        # print(self.x, self.y)
       
         return True   
                 
@@ -197,8 +210,8 @@ class Game:
         self.board = Board()
         
     def display(self):
-        self.pacman.display()
         self.board.display()
+        self.pacman.display()
         
     # def getTile(self, r, c):
     #     for tile in self.tiles:
@@ -211,6 +224,7 @@ class Game:
 g = Game(540,540)
 
 def setup():
+    frameRate(7)
     size(g.w,g.h)
     fill(255, 0, 0)
     
@@ -220,18 +234,15 @@ def draw():
 
 
 def keyPressed():
+    # print g.pacman.keyHandler
     if keyCode == LEFT:
         g.pacman.keyHandler[LEFT] = True
-        g.pacman.dir = "LEFT"
     elif keyCode == RIGHT:
         g.pacman.keyHandler[RIGHT] = True
-        g.pacman.dir = "RIGHT"
     elif keyCode == UP:
         g.pacman.keyHandler[UP] = True
-        g.pacman.dir = "UP"
     elif keyCode == DOWN:
         g.pacman.keyHandler[DOWN] = True
-        g.pacman.dir = "DOWN"
     if key == 'x':
         g.pacman.checkNextTile()
         
