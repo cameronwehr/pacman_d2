@@ -59,48 +59,57 @@ class Board:
             return col, row
 
 class Creature:
-    def __init__(self,x,y,v=1,vx=0,vy=0):
+    def __init__(self,x,y,name,v=1,vx=0,vy=0):       # add attribute name if want to have ghost name
         self.x=x
         self.y=y
         self.v=v
-        self.dir="RIGHT"
-        self.img=loadImage(path+'/images/pacman'+str(self.dir)+'.png')
-    
+        self.dir='RIGHT'
+        self.imgRight=loadImage(path+'/images/'+name+'RIGHT.png')
+        self.imgLeft=loadImage(path+'/images/'+name+'LEFT.png')
+        self.imgUp=loadImage(path+'/images/'+name+'UP.png')
+        self.imgDown=loadImage(path+'/images/'+name+'DOWN.png')
+        
+ 
+    def display(self):
+        self.update()
+        if self.dir == 'RIGHT':
+            image(self.imgRight,self.x,self.y,self.dim,self.dim)
+        elif self.dir == 'LEFT':
+            image(self.imgLeft,self.x,self.y,self.dim,self.dim)
+        elif self.dir == 'UP':
+            image(self.imgUp,self.x,self.y,self.dim,self.dim)
+        elif self.dir == 'DOWN':
+            image(self.imgDown,self.x,self.y,self.dim,self.dim)
         
 class PacMan(Creature):
-    def __init__(self,x,y):
-        Creature.__init__(self,x,y)
+    def __init__(self,x,y,name):
+        Creature.__init__(self,x,y,name)
         self.keyHandler = {LEFT:False, RIGHT:False, UP:False, DOWN:False}
         self.vx=0
         self.vy=0
         self.dim = 20
-        self.dir = "RIGHT"
         
         
     def update(self):
         if self.keyHandler[LEFT]:
             self.vx = -20
-            # self.vy = 0
+            self.vy = 0
             self.dir = 'LEFT'
-            # print(self.dir)
         elif self.keyHandler[RIGHT]:
             self.vx = 20
-            # self.vy = 0
+            self.vy = 0
             self.dir = 'RIGHT'
-            # print(self.dir)
         else:
             self.vx = 0 
         
         if self.keyHandler[UP]:
-            # self.vx = 0
+            self.vx = 0
             self.vy = -20
             self.dir = 'UP'
-            # print(self.dir)
         elif self.keyHandler[DOWN]:
-            # self.vx = 0
+            self.vx = 0
             self.vy = 20
             self.dir = 'DOWN'
-            # print(self.dir)
         else:
             self.vy = 0
         
@@ -110,6 +119,8 @@ class PacMan(Creature):
             self.x += self.vx
             self.y += self.vy
         # print(self.x, self.y)
+        
+ 
     
         
     # def display(self):
@@ -131,10 +142,6 @@ class PacMan(Creature):
         
         
 
-    def display(self):
-        image(self.img,self.x,self.y,self.dim,self.dim)
-        self.update()
-        print self.vx, self.vy 
         
     # True if moveable, False if block
     def checkNextTile(self):
@@ -206,7 +213,8 @@ class Game:
     def __init__(self,w,h):
         self.w=w
         self.h=h
-        self.pacman=PacMan(20,20)
+        self.pacman=PacMan(20,20,'pacman')
+        
         self.board = Board()
         
     def display(self):
@@ -231,6 +239,7 @@ def setup():
 def draw():
     background(0)
     g.display()
+
 
 
 def keyPressed():
