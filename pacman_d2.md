@@ -7,10 +7,10 @@ class Block:
         self.x=x
         self.y=y
         self.img = loadImage(path+"/images/block.png")
-        self.dim = 20 #dimension of a block is 20 x 20
+        self.dim = 16 #dimension of a block is 20 x 20
         
     def display(self):
-        image(self.img,self.x*self.dim,self.y*self.dim)
+        image(self.img,self.x,self.y)
             
 class Pellet:
     def __init__(self,x,y): 
@@ -20,7 +20,7 @@ class Pellet:
         
     
     def display(self):
-        image(self.img,self.x*20+8,self.y*20+8,5,5)
+        image(self.img,self.x+8,self.y+8,5,5)
         # elif self.v == 'special':
         #     image(self.img,self.x,self.y)
 
@@ -29,18 +29,18 @@ class Board:
         self.blocks = []
         self.pellet = []
         inputFile = open(path+"/PacMan-board.csv","r")
-        y = 0
+        row = 0
         for line in inputFile:
             line = line.strip().split(",")
             
-            x = 0
+            col = 0
             for i in line:
                 if i == '#':
-                    self.blocks.append(Block(x,y))
+                    self.blocks.append(Block(col*20,row*20))
                 elif i == '.':
-                    self.pellet.append(Pellet(x,y))
-                x+=1
-            y+=1
+                    self.pellet.append(Pellet(col*20,row*20))
+                col+=1
+            row+=1
         
         # print x and y of every block
         for block in self.blocks:
@@ -51,6 +51,12 @@ class Board:
             block.display()
         for pellet in self.pellet:
             pellet.display()
+            
+    def getBoard(self,x,y): 
+        for b in blocks:
+            col = self.x//self.dim
+            row = self.y//self.dim 
+            return col, row
 
 class Creature:
     def __init__(self,x,y,v=1,vx=0,vy=0):
@@ -67,7 +73,7 @@ class PacMan(Creature):
         self.keyHandler = {LEFT:False, RIGHT:False, UP:False, DOWN:False}
         self.vx=0
         self.vy=0
-        self.dim = 18
+        self.dim = 20
         self.dir = "RIGHT"
         
         
@@ -101,6 +107,7 @@ class PacMan(Creature):
         if nextBlockSafe == True:
             self.x += self.vx
             self.y += self.vy
+        # print(self.x, self.y)
         
     # def display(self):
     #     self.update()
@@ -127,25 +134,59 @@ class PacMan(Creature):
         
     # True if moveable, False if block
     def checkNextTile(self):
-        checkC = self.y//self.dim
-        checkR = self.x//self.dim
-        print("PacMan {},{}".format(checkR,checkC))
+        # y = self.y
+        # x = self.x
+        # print("PacMan {},{}".format(checkR,checkC))
+        
+        
+        
         # 1. Convert pacman's x and y coordinates to a row and column
         # print("TopLeft: {}:{}, TopRight: {}:{}, BotLeft: {}:{}, BotRight: {}:{}".format(self.x, self.y, (self.x+self.dim), self.y, self.x, (self.y+self.dim), (self.x+self.dim), (self.y+self.dim)))
+        fill(255)
         if self.dir == 'LEFT':
+            for b in g.board.blocks:
+                if (b.x <= self.x <= b.x + b.dim ) and (b.y - b.dim < self.y < b.y + b.dim):
+                    return False
+        if self.dir == 'RIGHT':
+            for b in g.board.blocks:
+                if (b.x <= self.x+b.dim <= b.x + b.dim) and (b.y - b.dim < self.y < b.y +  b.dim):
+                    return False
+        if self.dir == 'DOWN':
+            for b in g.board.blocks:
+                if (b.x - b.dim < self.x < b.x + b.dim) and (b.y - b. dim <=self.y <= b.y):
+                    return False        
+        if self.dir == 'UP':
+            for b in g.board.blocks:
+                if (b.x - b.dim < self.x < b.x + b.dim) and (b.y <= self.y <= b.y + b.dim ):
+                    return False    
+        print(self.x, self.y)
+      
+        return True   
+                
+                
+'''   
+            #return True 
         #     print("CAST FROM TOPLEFT AND BOTTOMLEFT IN LEFT DIRECTION")
-        # elif self.dir == 'RIGHT':
+        elif self.dir == 'RIGHT':
+             checkC = checkC +1
+             
+             
         #     print("CAST FROM TOPRIGHT AND BOTRIGHT IN RIGHT DIRECTION")
-        # elif self.dir == 'UP':
+        elif self.dir == 'UP':
+            checkR = checkR -1 
         #     print("CAST FROP TOPLEFT AND TOPRIGHT IN UP DIRECTION")
-        # elif self.dir == 'DOWN':
+        elif self.dir == 'DOWN':
+            checkR = checkR -1 
+        
+        return True
         #     print("CAST FROP BOTLEFT AND BOTRIGHT IN DOWN DIRECTION")
         # print("IF BOTH CASTS GAVE EMPTY, WE CAN MOVE IN THAT DIRECTION")
-        else:
-            return False
+        # else:
+        #     return False
+    
         
     
-
+'''
 
         
 class Game:
@@ -171,6 +212,7 @@ g = Game(540,540)
 
 def setup():
     size(g.w,g.h)
+    fill(255, 0, 0)
     
 def draw():
     background(0)
