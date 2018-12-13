@@ -20,11 +20,24 @@ class Pellet:
     
     def display(self):
         image(self.img,self.x+8,self.y+8,5,5)
+        
+
+class Watermelon:                                                        #special pellets that cause sprites to be ghosts
+    def __init__(self,x,y):
+        self.x=x
+        self.y=y
+        self.status= False                                               #False to show sprites, True to show ghosts
+        self.img = loadImage(path+"/images/watermelon.png")
+        
+    def display(self):
+        image(self.img,self.x,self.y,20,20)
+
 
 class Board:
     def __init__(self):
         self.blocks = []
         self.pellet = []
+        self.watermelon = []
         inputFile = open(path+"/PacMan-board.csv","r")
         row = 0
         for line in inputFile:
@@ -36,6 +49,8 @@ class Board:
                     self.blocks.append(Block(col*20,row*20))
                 elif i == '.':
                     self.pellet.append(Pellet(col*20,row*20))
+                elif i == '*':
+                    self.watermelon.append(Watermelon(col*20,row*20))
                 col+=1
             row+=1
         
@@ -44,6 +59,8 @@ class Board:
             block.display()
         for pellet in self.pellet:
             pellet.display()
+        for watermelon in self.watermelon:
+            watermelon.display()
             
     def getBoard(self,x,y): 
         for b in blocks:
@@ -52,26 +69,27 @@ class Board:
             return col, row
 
 class Creature:
-    def __init__(self,x,y,v=1,vx=0,vy=0):
+    def __init__(self,x,y,v=1):
         self.x=x
         self.y=y
         self.v=v
-        self.dir="RIGHT"
-        self.left1 = loadImage(path+'/images/pacmanleft1.png')
-        self.left2 = loadImage(path+'/images/pacmanleft2.png')
-        self.right1 = loadImage(path+'/images/pacmanright1.png')
-        self.right2 = loadImage(path+'/images/pacmanright2.png')
-        self.up1 = loadImage(path+'/images/pacmanup1.png')
-        self.up2 = loadImage(path+'/images/pacmanup2.png')
-        self.down1 = loadImage(path+'/images/pacmandown1.png')
-        self.down2 = loadImage(path+'/images/pacmandown2.png')
-        self.imgs= [self.right1, self.right2]                    
-
-class Ghosts(Creature):
-    def __init__(self,x,y,v=1,vx=0,vy=0):
+        self.dir="RIGHT"                    
+        
+class Sprites(Creature):
+    def __init__(self,x,y,v=1):
+        Creature.__init__(self,x,y)
         self.x=x
         self.y=y
-        self.v=v
+        self.vx=1
+        self.vy=1
+        self.names = ['red','orange','pink','blue']
+        self.status=True                                                         # if Watermelon returns True, sprites = False  
+        self.rightred = loadImage(path+'/images/redspriteRIGHT.png')
+        self.leftred = loadImage(path+'/images/redspriteLEFT.png')
+        self.upred = loadImage(path+'/images/redsprite.png')
+        self.downred = loadImage(path+'/images/pacmandown2.png')
+        
+        # if Watermelon returns True, sprites = False 
         
 class PacMan(Creature):
     def __init__(self,x,y):
@@ -82,6 +100,15 @@ class PacMan(Creature):
         self.dim = 20
         self.dir = "RIGHT"
         self.sprite = 0
+        self.left1 = loadImage(path+'/images/pacmanleft1.png')
+        self.left2 = loadImage(path+'/images/pacmanleft2.png')
+        self.right1 = loadImage(path+'/images/pacmanright1.png')
+        self.right2 = loadImage(path+'/images/pacmanright2.png')
+        self.up1 = loadImage(path+'/images/pacmanup1.png')
+        self.up2 = loadImage(path+'/images/pacmanup2.png')
+        self.down1 = loadImage(path+'/images/pacmandown1.png')
+        self.down2 = loadImage(path+'/images/pacmandown2.png')
+        self.imgs= [self.right1, self.right2]
         
         
     def update(self):
@@ -115,7 +142,7 @@ class PacMan(Creature):
         else:
             self.vy = 0
         
-        # before we add hte velocities, check if PacMan is in a square that lets him move to the next block
+        # before we add the velocities, check if PacMan is in a square that lets him move to the next block
         nextBlockSafe = self.checkNextTile()
         if nextBlockSafe == True:
             self.x += self.vx
@@ -124,6 +151,10 @@ class PacMan(Creature):
         for p in g.board.pellet:
             if self.x == p.x and self.y == p.y:
                 g.board.pellet.remove(p)
+        for s in g.board.watermelon:
+            if self.x == s.x and self.y == s.y:
+                g.board.watermelon.remove(s)
+            
     
 
     def display(self):
@@ -132,9 +163,6 @@ class PacMan(Creature):
 
         image(self.imgs[self.sprite],self.x,self.y,self.dim,self.dim)
         
-      
-            
-    
         print self.vx, self.vy 
         
     # True if moveable, False if block
@@ -201,4 +229,3 @@ def keyReleased():
         g.pacman.keyHandler[UP] = False
     elif keyCode == DOWN:
         g.pacman.keyHandler[DOWN] = False
-
