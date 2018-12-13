@@ -16,6 +16,7 @@ class Pellet:
     def __init__(self,x,y): 
         self.x=x
         self.y=y
+        #self.status="shown" #all pellets will be shown initially
         self.img = loadImage(path+"/images/pellet.png")
         
     
@@ -59,57 +60,67 @@ class Board:
             return col, row
 
 class Creature:
-    def __init__(self,x,y,name,v=1,vx=0,vy=0):       # add attribute name if want to have ghost name
+    def __init__(self,x,y,v=1,vx=0,vy=0):
         self.x=x
         self.y=y
         self.v=v
-        self.dir='RIGHT'
-        self.imgRight=loadImage(path+'/images/'+name+'RIGHT.png')
-        self.imgLeft=loadImage(path+'/images/'+name+'LEFT.png')
-        self.imgUp=loadImage(path+'/images/'+name+'UP.png')
-        self.imgDown=loadImage(path+'/images/'+name+'DOWN.png')
+        self.dir="RIGHT"
+        self.left1 = loadImage(path+'/images/pacmanleft1.png')
+        self.left2 = loadImage(path+'/images/pacmanleft2.png')
+        self.right1 = loadImage(path+'/images/pacmanright1.png')
+        self.right2 = loadImage(path+'/images/pacmanright2.png')
+        self.up1 = loadImage(path+'/images/pacmanup1.png')
+        self.up2 = loadImage(path+'/images/pacmanup2.png')
+        self.down1 = loadImage(path+'/images/pacmandown1.png')
+        self.down2 = loadImage(path+'/images/pacmandown2.png')
+        self.imgs= [self.left1, self.left2]                    
+
+class Ghosts(Creature):
+    def __init__(self,x,y,v=1,vx=0,vy=0):
+        self.x=x
+        self.y=y
+        self.v=v
         
- 
-    def display(self):
-        self.update()
-        if self.dir == 'RIGHT':
-            image(self.imgRight,self.x,self.y,self.dim,self.dim)
-        elif self.dir == 'LEFT':
-            image(self.imgLeft,self.x,self.y,self.dim,self.dim)
-        elif self.dir == 'UP':
-            image(self.imgUp,self.x,self.y,self.dim,self.dim)
-        elif self.dir == 'DOWN':
-            image(self.imgDown,self.x,self.y,self.dim,self.dim)
         
 class PacMan(Creature):
-    def __init__(self,x,y,name):
-        Creature.__init__(self,x,y,name)
+    def __init__(self,x,y):
+        Creature.__init__(self,x,y)
         self.keyHandler = {LEFT:False, RIGHT:False, UP:False, DOWN:False}
         self.vx=0
         self.vy=0
         self.dim = 20
+        self.dir = "RIGHT"
+        self.sprite = 0
         
         
     def update(self):
         if self.keyHandler[LEFT]:
             self.vx = -20
-            self.vy = 0
+            # self.vy = 0
             self.dir = 'LEFT'
+            self.imgs = [self.left1, self.left2]
+            # print(self.dir)
         elif self.keyHandler[RIGHT]:
             self.vx = 20
-            self.vy = 0
+            # self.vy = 0
             self.dir = 'RIGHT'
+            self.imgs = [self.right1, self.right2]
+            # print(self.dir)
         else:
             self.vx = 0 
         
         if self.keyHandler[UP]:
-            self.vx = 0
+            # self.vx = 0
             self.vy = -20
             self.dir = 'UP'
+            self.imgs = [self.up1, self.up2]
+            # print(self.dir)
         elif self.keyHandler[DOWN]:
-            self.vx = 0
+            # self.vx = 0
             self.vy = 20
             self.dir = 'DOWN'
+            self.imgs = [self.down1, self.down2]
+            # print(self.dir)
         else:
             self.vy = 0
         
@@ -119,8 +130,6 @@ class PacMan(Creature):
             self.x += self.vx
             self.y += self.vy
         # print(self.x, self.y)
-        
- 
     
         
     # def display(self):
@@ -139,9 +148,33 @@ class PacMan(Creature):
         #         self.vx=0
         #         self.vy=0
         
+    # def eatenPellets(self,
+    #     if pacman passes through one pellet, it will be deleted from the pellet list 
         
+    #      if self.keyHandler[LEFT] or self.keyHandler[RIGHT] :
+    #         for b in g.board.pellets:
+    #             if self.y == b.y and self.x+self.vx == b.x:
+    #                 delete b 
+    #                 return False
         
 
+    def display(self):
+        self.sprite = (self.sprite + 1) % 2
+        self.update() 
+
+        image(self.imgs[self.sprite],self.x,self.y,self.dim,self.dim)
+        
+        # if dir == RIGHT: 
+        #     loadImage(path+'/images/pacman'+str(self.dir)+'.png')
+        # elif dir == LEFT: 
+        #     loadImage(path+'/images/pacman'+str(self.dir)+'.png')
+        # elif dir == DOWN:
+        #      loadImage(path+'/images/pacman'+str(self.dir)+'.png')
+        # elif dir == UP:
+        #     loadImage(path+'/images/pacman'+str(self.dir)+'.png')
+        
+    
+        print self.vx, self.vy 
         
     # True if moveable, False if block
     def checkNextTile(self):
@@ -154,8 +187,9 @@ class PacMan(Creature):
         # 1. Convert pacman's x and y coordinates to a row and column
         # print("TopLeft: {}:{}, TopRight: {}:{}, BotLeft: {}:{}, BotRight: {}:{}".format(self.x, self.y, (self.x+self.dim), self.y, self.x, (self.y+self.dim), (self.x+self.dim), (self.y+self.dim)))
         fill(255)
-
+        
         if self.keyHandler[LEFT] or self.keyHandler[RIGHT] :
+            
             for b in g.board.blocks:
                 if self.y == b.y and self.x+self.vx == b.x:
                     self.vx = 0
@@ -168,53 +202,15 @@ class PacMan(Creature):
                     self.vy = 0
                     self.vx = 0
                     return False
-                
-                # if (b.x <= self.x+b.dim <= b.x + b.dim) and (b.y - b.dim < self.y < b.y +  b.dim):
-                #     return False
-        # if self.dir == 'DOWN':
-        #     for b in g.board.blocks:
-        #         if (b.x - b.dim < self.x < b.x + b.dim) and (b.y - b. dim <=self.y <= b.y):
-        #             return False        
-        # if self.dir == 'UP':
-        #     for b in g.board.blocks:
-        #         if (b.x - b.dim < self.x < b.x + b.dim) and (b.y <= self.y <= b.y + b.dim ):
-        #             return False    
-        # print(self.x, self.y)
       
         return True   
                 
-                
-'''   
-            #return True 
-        #     print("CAST FROM TOPLEFT AND BOTTOMLEFT IN LEFT DIRECTION")
-        elif self.dir == 'RIGHT':
-             checkC = checkC +1
-             
-             
-        #     print("CAST FROM TOPRIGHT AND BOTRIGHT IN RIGHT DIRECTION")
-        elif self.dir == 'UP':
-            checkR = checkR -1 
-        #     print("CAST FROP TOPLEFT AND TOPRIGHT IN UP DIRECTION")
-        elif self.dir == 'DOWN':
-            checkR = checkR -1 
-        
-        return True
-        #     print("CAST FROP BOTLEFT AND BOTRIGHT IN DOWN DIRECTION")
-        # print("IF BOTH CASTS GAVE EMPTY, WE CAN MOVE IN THAT DIRECTION")
-        # else:
-        #     return False
-    
-        
-    
-'''
-
         
 class Game:
     def __init__(self,w,h):
         self.w=w
         self.h=h
-        self.pacman=PacMan(20,20,'pacman')
-        
+        self.pacman=PacMan(20,20)
         self.board = Board()
         
     def display(self):
@@ -239,8 +235,7 @@ def setup():
 def draw():
     background(0)
     g.display()
-
-
+    
 
 def keyPressed():
     # print g.pacman.keyHandler
