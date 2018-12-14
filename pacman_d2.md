@@ -1,4 +1,4 @@
-import os, random
+import os, random, time
 path=os.getcwd()
 
 class Block:
@@ -28,6 +28,10 @@ class Watermelon:                                                        #specia
         self.y=y
         self.status= False                                               #False to show sprites, True to show ghosts
         self.img = loadImage(path+"/images/watermelon.png")
+        
+    def eaten(self):
+        if self.x == g.pacman.x and self.y == g.pacman.y:
+            self.status = True 
         
     def display(self):
         image(self.img,self.x,self.y,20,20)
@@ -90,7 +94,7 @@ class Ghosts(Creature):
         self.vy=0
         self.dim = 20 
         self.sprite=0
-        self.status=True                                                      # if Watermelon returns True, sprites = False  
+        self.status=True                                                               # if Watermelon returns True, sprites = False  
         self.ghostright1 = loadImage(path+'/images/'+self.img+'ghostright1.png')
         self.ghostright2 = loadImage(path+'/images/'+self.img+'ghostright2.png')
         self.ghostleft1 = loadImage(path+'/images/'+self.img+'ghostleft1.png')
@@ -100,6 +104,7 @@ class Ghosts(Creature):
         self.ghostdown1 = loadImage(path+'/images/'+self.img+'ghostdown1.png')
         self.ghostdown2 = loadImage(path+'/images/'+self.img+'ghostdown2.png')
         self.imgs = [self.ghostright1,self.ghostright2]
+        self.dead = loadImage(path+'/images/flash1.png')
         
         # if Watermelon returns True, sprites = False 
         
@@ -136,13 +141,12 @@ class Ghosts(Creature):
         
         self.x += self.vx
         self.y += self.vy
-        
+
         
     def dirChange(self, leftSafe, rightSafe, upSafe, downSafe):
         choice = random.randint(1,2)
 
         if self.dir == 'RIGHT' or self.dir == 'LEFT':
-            
             if choice == 1:
                 if downSafe == True:
                     self.dir = 'DOWN'
@@ -174,8 +178,7 @@ class Ghosts(Creature):
                     self.dir = 'RIGHT'
                     self.imgs = [self.ghostright1, self.ghostright2]
                     
-        
-    
+
     def checkLEFTTile(self):
         
         for b in g.board.blocks:
@@ -207,7 +210,10 @@ class Ghosts(Creature):
         self.sprite = (self.sprite + 1) % 2
         self.update()
         self.teleport()
-        image(self.imgs[self.sprite],self.x,self.y,self.dim,self.dim)
+        if self.status == True:
+            image(self.imgs[self.sprite],self.x,self.y,self.dim,self.dim)
+        elif self.status == False:
+            image(self.dead,self.x,self.y,self.dim,self.dim)
         #self.sprite = (self.sprite + 1) % 2
         #self.update() 
 
@@ -230,7 +236,8 @@ class PacMan(Creature):
         self.up2 = loadImage(path+'/images/pacmanup2.png')
         self.down1 = loadImage(path+'/images/pacmandown1.png')
         self.down2 = loadImage(path+'/images/pacmandown2.png')
-        self.imgs= [self.right1, self.right2]
+        self.imgs = [self.right1, self.right2]
+        self.time_check = False
 
     
         
@@ -261,7 +268,7 @@ class PacMan(Creature):
         else:
             self.vy = 0
         
-        # before we add the velocities, check if PacMan is in a square that lets him move to the next block
+                                                                                 # before we add the velocities, check if PacMan is in a square that lets him move to the next block
         nextBlockSafe = self.checkNextTile()
         if nextBlockSafe == True:
             self.x += self.vx
@@ -273,6 +280,20 @@ class PacMan(Creature):
         for s in g.board.watermelon:
             if self.x == s.x and self.y == s.y:
                 g.board.watermelon.remove(s)
+                # for i in range (30):
+                timePeriod = 6
+                self.start_time = time.time()
+                g.ghost1.status = False 
+                g.ghost2.status = False 
+                g.ghost3.status = False 
+                g.ghost4.status = False
+                self.time_check = True
+            if (self.time_check and (time.time()-self.start_time>=6)):
+                g.ghost1.status = True 
+                g.ghost2.status = True 
+                g.ghost3.status = True 
+                g.ghost4.status = True 
+                self.time_check = False
             
     
 
@@ -281,10 +302,35 @@ class PacMan(Creature):
         self.update() 
         self.teleport()
         image(self.imgs[self.sprite],self.x,self.y,self.dim,self.dim)
-        #print self.vx, self.vy 
         
-    # True if moveable, False if block
-    def checkNextTile(self):
+        if self.x == g.ghost1.x and self.y == g.ghost1.y and g.ghost1.status == True:
+            g.__init__(540,540)
+        elif self.x == g.ghost1.x and self.y == g.ghost1.y and g.ghost1.status == False:
+            g.ghost1.x = 220
+            g.ghost1.y = 220
+            g.ghost1.display()
+        if self.x == g.ghost2.x and self.y == g.ghost2.y and g.ghost2.status == True:
+            g.__init__(540,540)
+        elif self.x == g.ghost2.x and self.y == g.ghost2.y and g.ghost2.status == False:
+            g.ghost2.x = 240
+            g.ghost2.y = 220
+            g.ghost2.display()
+        if self.x == g.ghost3.x and self.y == g.ghost3.y and g.ghost3.status == True:
+            g.__init__(540,540)
+        elif self.x == g.ghost3.x and self.y == g.ghost3.y and g.ghost3.status == False:
+            g.ghost3.x = 260
+            g.ghost3.y = 220
+            g.ghost3.display()
+        if self.x == g.ghost4.x and self.y == g.ghost4.y and g.ghost4.status == True:
+            g.__init__(540,540)
+        elif self.x == g.ghost4.x and self.y == g.ghost4.y and g.ghost4.status == False:
+            g.ghost4.x = 280
+            g.ghost4.y = 220
+            g.ghost4.display()
+            
+        
+
+    def checkNextTile(self):                                                                             # True if moveable, False if block
 
         fill(255)
         
@@ -313,6 +359,7 @@ class Game:
         self.ghost3=Ghosts(160,140,'teal')
         self.ghost4=Ghosts(360,140,'pink')
         self.board = Board()
+        self.win = loadImage(path+'/images/win.png')
         
     def display(self):
         self.board.display()
@@ -321,6 +368,9 @@ class Game:
         self.ghost2.display()
         self.ghost3.display()
         self.ghost4.display()
+        
+    def displayWin(self):
+        image(self.win,0,0,self.w,self.h)
             
 g = Game(540,540)
 
@@ -331,7 +381,10 @@ def setup():
     
 def draw():
     background(0)
-    g.display()
+    if len(g.board.pellet) != 0:
+        g.display()
+    else:
+        g.displayWin()
     
 
 def keyPressed():
