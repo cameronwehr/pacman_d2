@@ -1,4 +1,4 @@
-import os
+import os, random
 path=os.getcwd()
 
 class Block:
@@ -73,15 +73,21 @@ class Creature:
         self.x=x
         self.y=y
         self.v=v
-        self.dir="RIGHT"                    
+        self.dir = "RIGHT"  
+        
+    def teleport(self):
+        if self.x == -20 and self.y == 260 and self.dir == 'LEFT':
+            self.x = 520
+        if self.x == 540 and self.y == 260 and self.dir == 'RIGHT':
+            self.x = 0
+        
         
 class Ghosts(Creature):
     def __init__(self,x,y):
         Creature.__init__(self,x,y)
-        self.vx=0
+        self.vx=20
         self.vy=0
         self.dim = 20 
-        self.dir="RIGHT"
         self.names = ['red','orange','pink','blue']
         self.status=True                                                         # if Watermelon returns True, sprites = False  
         self.rightred = loadImage(path+'/images/redghostright1.png')
@@ -92,54 +98,99 @@ class Ghosts(Creature):
         # if Watermelon returns True, sprites = False 
         
     def update(self):
-        if self.dir=='LEFT':
-            self.vx = -20
-            # self.vy = 0
-            self.dir = 'LEFT'
-            # self.imgs = [self.left1, self.left2]
-        elif self.dir=='RIGHT':
+        leftSafe = self.checkLEFTTile()
+        rightSafe = self.checkRIGHTTile()
+        upSafe = self.checkUPTile()
+        downSafe = self.checkDOWNTile()
+
+        print(self.dir)
+        change = random.randint(1,2)
+        
+        if change == 1:
+            self.dirChange(leftSafe, rightSafe, upSafe, downSafe)
+        
+        
+        
+        if self.dir == 'RIGHT' and rightSafe == True:
             self.vx = 20
-            # self.vy = 0
-            self.dir = 'RIGHT'
-            # self.imgs = [self.right1, self.right2]
-        else:
-            self.vx = 0 
-        
-        if self.dir == 'UP':
-            # self.vx = 0
-            self.vy = -20
-            self.dir = 'UP'
-            # self.imgs = [self.up1, self.up2]
-        elif self.dir == 'DOWN':
-            # self.vx = 0
-            self.vy = 20
-            self.dir = 'DOWN'
-            # self.imgs = [self.down1, self.down2]
-        else:
             self.vy = 0
-        
-        nextBlockSafe = self.checkNextTile()
-        if nextBlockSafe == True:
-            self.x += self.vx
-            self.y += self.vy
-        
-        
-    def checkNextTile(self):
-        fill(255)
-        
-        if self.dir == 'RIGHT' or self.dir == 'LEFT':
-            for b in g.board.blocks:
-                if self.y == b.y and self.x+self.vx == b.x:
-                    self.vx = 0
-                    self.vy = 0
-                    return False
             
-        if self.dir == 'UP' or self.dir == 'DOWN':
-            for b in g.board.blocks:
-                if self.x == b.x and self.y+self.vy == b.y:
-                    self.vy = 0
-                    self.vx = 0
-                    return False
+        elif self.dir == 'LEFT' and leftSafe == True:
+            self.vx = -20
+            self.vy = 0
+            
+        elif self.dir == 'UP' and upSafe == True:
+            self.vx = 0
+            self.vy = -20
+            
+        elif self.dir == 'DOWN' and downSafe == True:
+            self.vx = 0
+            self.vy = 20
+        else:
+            self.dirChange(leftSafe, rightSafe, upSafe, downSafe)
+            self.vx = 0
+            self.vy = 0    
+        
+                
+        
+        
+        self.x += self.vx
+        self.y += self.vy
+        
+    def dirChange(self, leftSafe, rightSafe, upSafe, downSafe):
+        choice = random.randint(1,2)
+
+        if self.dir == 'RIGHT' or self.dir == 'LEFT':
+            
+            if choice == 1:
+                if downSafe == True:
+                    self.dir = 'DOWN'
+                elif upSafe == True:
+                    self.dir = 'UP'
+            else:
+                if upSafe == True:
+                    self.dir = 'UP'
+                elif downSafe == True:
+                    self.dir = 'DOWN'
+                    
+        elif self.dir == 'UP' or self.dir == 'DOWN':
+            if choice == 1:
+                if rightSafe == True:
+                    self.dir = 'RIGHT'
+                elif leftSafe == True:
+                    self.dir = 'LEFT'
+            else:
+                if leftSafe == True:
+                    self.dir = 'LEFT'
+                elif rightSafe == True:
+                    self.dir = 'RIGHT'
+                    
+        
+    
+    def checkLEFTTile(self):
+        
+        for b in g.board.blocks:
+            if self.y == b.y and self.x-20 == b.x:
+                return False
+        return True
+            
+    def checkRIGHTTile(self):
+
+        for b in g.board.blocks:
+            if self.y == b.y and self.x+20 == b.x:
+                return False
+        return True        
+    
+    def checkUPTile(self):
+        for b in g.board.blocks:
+            if self.x == b.x and self.y-20 == b.y:
+                return False
+        return True   
+    
+    def checkDOWNTile(self):
+        for b in g.board.blocks:
+            if self.x == b.x and self.y+20 == b.y:
+                return False
         return True   
         
         
@@ -147,8 +198,9 @@ class Ghosts(Creature):
         
         
     def display(self):
-        image(self.rightred,self.x,self.y,self.dim,self.dim)
         self.update()
+        self.teleport()
+        image(self.rightred,self.x,self.y,self.dim,self.dim)
         #self.sprite = (self.sprite + 1) % 2
         #self.update() 
 
@@ -162,7 +214,6 @@ class PacMan(Creature):
         self.vx=0
         self.vy=0
         self.dim = 20
-        self.dir = "RIGHT"
         self.sprite = 0
         self.left1 = loadImage(path+'/images/pacmanleft1.png')
         self.left2 = loadImage(path+'/images/pacmanleft2.png')
@@ -179,31 +230,27 @@ class PacMan(Creature):
     def update(self):
         if self.keyHandler[LEFT]:
             self.vx = -20
-            # self.vy = 0
+            self.vy = 0
             self.dir = 'LEFT'
             self.imgs = [self.left1, self.left2]
-            # print(self.dir)
         elif self.keyHandler[RIGHT]:
             self.vx = 20
-            # self.vy = 0
+            self.vy = 0
             self.dir = 'RIGHT'
             self.imgs = [self.right1, self.right2]
-            # print(self.dir)
         else:
             self.vx = 0 
         
         if self.keyHandler[UP]:
-            # self.vx = 0
+            self.vx = 0
             self.vy = -20
             self.dir = 'UP'
             self.imgs = [self.up1, self.up2]
-            # print(self.dir)
         elif self.keyHandler[DOWN]:
-            # self.vx = 0
+            self.vx = 0
             self.vy = 20
             self.dir = 'DOWN'
             self.imgs = [self.down1, self.down2]
-            # print(self.dir)
         else:
             self.vy = 0
         
@@ -225,7 +272,7 @@ class PacMan(Creature):
     def display(self):
         self.sprite = (self.sprite + 1) % 2
         self.update() 
-
+        self.teleport()
         image(self.imgs[self.sprite],self.x,self.y,self.dim,self.dim)
         #print self.vx, self.vy 
         
@@ -234,7 +281,7 @@ class PacMan(Creature):
 
         fill(255)
         
-        if self.keyHandler[LEFT] or self.keyHandler[RIGHT] :
+        if self.keyHandler[LEFT] or self.keyHandler[RIGHT]:
             for b in g.board.blocks:
                 if self.y == b.y and self.x+self.vx == b.x:
                     self.vx = 0
@@ -265,7 +312,7 @@ class Game:
 g = Game(540,540)
 
 def setup():
-    frameRate(7)
+    frameRate(10)
     size(g.w,g.h)
     fill(255, 0, 0)
     
