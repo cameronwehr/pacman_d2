@@ -75,21 +75,38 @@ class Creature:
         self.v=v
         self.dir="RIGHT"                    
         
-class Sprites(Creature):
-    def __init__(self,x,y,v=1):
+class Ghosts(Creature):
+    def __init__(self,x,y):
         Creature.__init__(self,x,y)
-        self.x=x
-        self.y=y
-        self.vx=1
-        self.vy=1
+        self.vx=0
+        self.vy=0
+        self.dim = 20 
+        self.dir="RIGHT"
         self.names = ['red','orange','pink','blue']
         self.status=True                                                         # if Watermelon returns True, sprites = False  
-        self.rightred = loadImage(path+'/images/redspriteRIGHT.png')
+        self.rightred = loadImage(path+'/images/redghostright1.png')
         self.leftred = loadImage(path+'/images/redspriteLEFT.png')
         self.upred = loadImage(path+'/images/redsprite.png')
         self.downred = loadImage(path+'/images/pacmandown2.png')
         
         # if Watermelon returns True, sprites = False 
+        
+    def update(self):
+        self.vx = 20
+        self.x += self.vx
+        
+        
+        
+        
+        
+    def display(self):
+        image(self.rightred,self.x,self.y,self.dim,self.dim)
+        self.update()
+        #self.sprite = (self.sprite + 1) % 2
+        #self.update() 
+
+        
+
         
 class PacMan(Creature):
     def __init__(self,x,y):
@@ -109,7 +126,8 @@ class PacMan(Creature):
         self.down1 = loadImage(path+'/images/pacmandown1.png')
         self.down2 = loadImage(path+'/images/pacmandown2.png')
         self.imgs= [self.right1, self.right2]
-        
+
+    
         
     def update(self):
         if self.keyHandler[LEFT]:
@@ -162,8 +180,7 @@ class PacMan(Creature):
         self.update() 
 
         image(self.imgs[self.sprite],self.x,self.y,self.dim,self.dim)
-        
-        print self.vx, self.vy 
+        #print self.vx, self.vy 
         
     # True if moveable, False if block
     def checkNextTile(self):
@@ -190,11 +207,13 @@ class Game:
         self.w=w
         self.h=h
         self.pacman=PacMan(20,20)
+        self.ghost=Ghosts(20,20)
         self.board = Board()
         
     def display(self):
         self.board.display()
         self.pacman.display()
+        self.ghost.display()
             
 g = Game(540,540)
 
