@@ -6,7 +6,7 @@ class Block:
         self.x=x
         self.y=y
         self.img = loadImage(path+"/images/block.png")
-        self.dim = 20 #dimension of a block is 20 x 20
+        self.dim = 20                                                    #dimension of a block is 20 x 20
         
     def display(self):
         image(self.img,self.x,self.y)
@@ -83,17 +83,23 @@ class Creature:
         
         
 class Ghosts(Creature):
-    def __init__(self,x,y):
+    def __init__(self,x,y,img):
         Creature.__init__(self,x,y)
+        self.img=img
         self.vx=20
         self.vy=0
         self.dim = 20 
-        self.names = ['red','orange','pink','blue']
-        self.status=True                                                         # if Watermelon returns True, sprites = False  
-        self.rightred = loadImage(path+'/images/redghostright1.png')
-        self.leftred = loadImage(path+'/images/redspriteLEFT.png')
-        self.upred = loadImage(path+'/images/redsprite.png')
-        self.downred = loadImage(path+'/images/pacmandown2.png')
+        self.sprite=0
+        self.status=True                                                      # if Watermelon returns True, sprites = False  
+        self.ghostright1 = loadImage(path+'/images/'+self.img+'ghostright1.png')
+        self.ghostright2 = loadImage(path+'/images/'+self.img+'ghostright2.png')
+        self.ghostleft1 = loadImage(path+'/images/'+self.img+'ghostleft1.png')
+        self.ghostleft2 = loadImage(path+'/images/'+self.img+'ghostleft2.png')
+        self.ghostup1 = loadImage(path+'/images/'+self.img+'ghostup1.png')
+        self.ghostup2 = loadImage(path+'/images/'+self.img+'ghostup2.png')
+        self.ghostdown1 = loadImage(path+'/images/'+self.img+'ghostdown1.png')
+        self.ghostdown2 = loadImage(path+'/images/'+self.img+'ghostdown2.png')
+        self.imgs = [self.ghostright1,self.ghostright2]
         
         # if Watermelon returns True, sprites = False 
         
@@ -103,13 +109,10 @@ class Ghosts(Creature):
         upSafe = self.checkUPTile()
         downSafe = self.checkDOWNTile()
 
-        print(self.dir)
         change = random.randint(1,2)
         
         if change == 1:
             self.dirChange(leftSafe, rightSafe, upSafe, downSafe)
-        
-        
         
         if self.dir == 'RIGHT' and rightSafe == True:
             self.vx = 20
@@ -131,11 +134,9 @@ class Ghosts(Creature):
             self.vx = 0
             self.vy = 0    
         
-                
-        
-        
         self.x += self.vx
         self.y += self.vy
+        
         
     def dirChange(self, leftSafe, rightSafe, upSafe, downSafe):
         choice = random.randint(1,2)
@@ -145,25 +146,33 @@ class Ghosts(Creature):
             if choice == 1:
                 if downSafe == True:
                     self.dir = 'DOWN'
+                    self.imgs = [self.ghostdown1, self.ghostdown2]
                 elif upSafe == True:
                     self.dir = 'UP'
+                    self.imgs = [self.ghostup1, self.ghostup2]
             else:
                 if upSafe == True:
                     self.dir = 'UP'
+                    self.imgs = [self.ghostup1, self.ghostup2]
                 elif downSafe == True:
                     self.dir = 'DOWN'
+                    self.imgs = [self.ghostdown1, self.ghostdown2]
                     
         elif self.dir == 'UP' or self.dir == 'DOWN':
             if choice == 1:
                 if rightSafe == True:
                     self.dir = 'RIGHT'
+                    self.imgs = [self.ghostright1, self.ghostright2]
                 elif leftSafe == True:
                     self.dir = 'LEFT'
+                    self.imgs = [self.ghostleft1, self.ghostleft2]
             else:
                 if leftSafe == True:
                     self.dir = 'LEFT'
+                    self.imgs = [self.ghostleft1, self.ghostleft2]
                 elif rightSafe == True:
                     self.dir = 'RIGHT'
+                    self.imgs = [self.ghostright1, self.ghostright2]
                     
         
     
@@ -193,14 +202,12 @@ class Ghosts(Creature):
                 return False
         return True   
         
-        
-        
-        
-        
+    
     def display(self):
+        self.sprite = (self.sprite + 1) % 2
         self.update()
         self.teleport()
-        image(self.rightred,self.x,self.y,self.dim,self.dim)
+        image(self.imgs[self.sprite],self.x,self.y,self.dim,self.dim)
         #self.sprite = (self.sprite + 1) % 2
         #self.update() 
 
@@ -300,19 +307,25 @@ class Game:
     def __init__(self,w,h):
         self.w=w
         self.h=h
-        self.pacman=PacMan(20,20)
-        self.ghost=Ghosts(20,20)
+        self.pacman=PacMan(260,500)
+        self.ghost1=Ghosts(160,180,'red')
+        self.ghost2=Ghosts(360,180,'yellow')
+        self.ghost3=Ghosts(160,140,'teal')
+        self.ghost4=Ghosts(360,140,'pink')
         self.board = Board()
         
     def display(self):
         self.board.display()
         self.pacman.display()
-        self.ghost.display()
+        self.ghost1.display()
+        self.ghost2.display()
+        self.ghost3.display()
+        self.ghost4.display()
             
 g = Game(540,540)
 
 def setup():
-    frameRate(10)
+    frameRate(7)
     size(g.w,g.h)
     fill(255, 0, 0)
     
