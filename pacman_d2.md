@@ -92,8 +92,55 @@ class Ghosts(Creature):
         # if Watermelon returns True, sprites = False 
         
     def update(self):
-        self.vx = 20
-        self.x += self.vx
+        if self.dir=='LEFT':
+            self.vx = -20
+            # self.vy = 0
+            self.dir = 'LEFT'
+            # self.imgs = [self.left1, self.left2]
+        elif self.dir=='RIGHT':
+            self.vx = 20
+            # self.vy = 0
+            self.dir = 'RIGHT'
+            # self.imgs = [self.right1, self.right2]
+        else:
+            self.vx = 0 
+        
+        if self.dir == 'UP':
+            # self.vx = 0
+            self.vy = -20
+            self.dir = 'UP'
+            # self.imgs = [self.up1, self.up2]
+        elif self.dir == 'DOWN':
+            # self.vx = 0
+            self.vy = 20
+            self.dir = 'DOWN'
+            # self.imgs = [self.down1, self.down2]
+        else:
+            self.vy = 0
+        
+        nextBlockSafe = self.checkNextTile()
+        if nextBlockSafe == True:
+            self.x += self.vx
+            self.y += self.vy
+        
+        
+    def checkNextTile(self):
+        fill(255)
+        
+        if self.dir == 'RIGHT' or self.dir == 'LEFT':
+            for b in g.board.blocks:
+                if self.y == b.y and self.x+self.vx == b.x:
+                    self.vx = 0
+                    self.vy = 0
+                    return False
+            
+        if self.dir == 'UP' or self.dir == 'DOWN':
+            for b in g.board.blocks:
+                if self.x == b.x and self.y+self.vy == b.y:
+                    self.vy = 0
+                    self.vx = 0
+                    return False
+        return True   
         
         
         
